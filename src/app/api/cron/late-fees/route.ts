@@ -1,85 +1,62 @@
 import { NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
-import { sendLateFeeNoticeEmail } from '@/lib/email';
+import { supabase } from '../../../../lib/supabase';
+import { Resend } from 'resend';
+
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export async function GET(request: Request) {
   try {
+    const authHeader = request.headers.get('authorization');
+    if (
+      process.env.CRON_SECRET &&
+      authHeader !== `Bearer ${process.env.CRON_SECRET}`
+    ) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     const today = new Date().toISOString().split('T')[0];
 
-    const { data: overdueCharges, error: fetchError } = await supabase
+    // Fetch unpaid charges past due date
+    const { data: overdueCharges, error } = await supabase
       .from('charges')
-      .select(`
-        id, 
-        lease_id, 
-        description, 
-        amount, 
-        due_date, 
-        status,
-        leases ( tenant_name, tenant_email )
-      `)
+      .select('id, amount, due_date, status, lease_id, leases(tenant_name, tenant_email, property_name, unit_number)')
       .eq('status', 'unpaid')
       .lt('due_date', today);
 
-    if (fetchError) {
-      console.error('Error fetching overdue charges:', fetchError);
-      return NextResponse.json({ error: fetchError.message }, { status: 500 });
+    if (error) {
+      throw error;
     }
 
-    if (!overdueCharges || overdueCharges.length === 0) {
-      return NextResponse.json({ message: 'No overdue rent charges found.' });
-    }
+    const processed = [];
 
-    const addedLateFees = [];
-
-    for (const charge of overdueCharges) {
-      const monthIdentifier = charge.due_date.substring(0, 7);
-      const lateFeeDescription = `Late Fee - Rent (${monthIdentifier})`;
-
-      const { data: existingFee } = await supabase
-        .from('charges')
-        .select('id')
-        .eq('lease_id', charge.lease_id)
-        .eq('description', lateFeeDescription)
-        .single();
-
-      if (!existingFee) {
-        const { data: newFee, error: insertError } = await supabase
-          .from('charges')
-          .insert({
-            lease_id: charge.lease_id,
-            description: lateFeeDescription,
-            amount: 50.0,
-            due_date: today,
-            status: 'unpaid',
-          })
-          .select()
-          .single();
-
-        if (!insertError && newFee) {
-          addedLateFees.push(newFee);
-
-          // Send notification email to tenant
-          const leaseData = (charge as any).leases;
-          if (leaseData?.tenant_email) {
-            await sendLateFeeNoticeEmail(
-              leaseData.tenant_email,
-              leaseData.tenant_name,
-              50.0,
-              lateFeeDescription
-            );
-          }
+    for (const charge of overdueCharges || []) {
+      // Send reminder email if Resend is configured
+      if (resend && (charge as any)?.leases?.tenant_email) {
+        const leaseInfo = (charge as any).leases;
+        try {
+          await resend.emails.send({
+            from: 'Bermuda Stone Properties <billing@bermudastoneproperties.com>',
+            to: [leaseInfo.tenant_email],
+            subject: `Payment Reminder - Past Due Rent (${leaseInfo.unit_number || 'Unit'})`,
+            html: `<p>Hello ${leaseInfo.tenant_name || 'Resident'},</p><p>This is a reminder that your balance of <strong>$${charge.amount}</strong> was due on ${charge.due_date}. Please log in to your resident portal to settle your balance.</p>`,
+          });
+        } catch (emailErr) {
+          console.error('Failed to send late fee email:', emailErr);
         }
       }
+      processed.push(charge.id);
     }
 
     return NextResponse.json({
       success: true,
-      processedOverdueCount: overdueCharges.length,
-      newLateFeesApplied: addedLateFees.length,
-      fees: addedLateFees,
+      overdueCount: overdueCharges?.length || 0,
+      processedIds: processed,
     });
   } catch (err: any) {
     console.error('Cron job error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json(
+      { error: err?.message || 'Failed to process late fees' },
+      { status: 500 }
+    );
   }
 }
