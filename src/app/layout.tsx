@@ -13,6 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  icons: {
+    icon: '/favicon.png?v=2',
+    shortcut: '/favicon.png?v=2',
+    apple: '/favicon.png?v=2',
+  },
   title: 'Bermuda Stone Properties | Resident Portal',
   description: 'Bermuda Stone Properties Resident Portal & Account Management',
 };
