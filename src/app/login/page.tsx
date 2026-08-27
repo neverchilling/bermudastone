@@ -30,7 +30,7 @@ export default function LoginPage() {
       }
 
       if (data?.session) {
-        router.push('/');
+        router.push('/portal');
         router.refresh();
       }
     } catch (err: any) {
