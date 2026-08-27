@@ -46,7 +46,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-emerald-500 selection:text-black">
       
-      {/* --- HEADER --- */}
+      {/* HEADER */}
       <header className="sticky top-0 z-40 w-full border-b border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* --- HERO SECTION --- */}
+      {/* HERO */}
       <section className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden border-b border-neutral-800/60">
         <div className="absolute inset-0 z-0 opacity-25">
           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/80 to-transparent z-10" />
@@ -133,7 +133,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- GALLERY SECTION --- */}
+      {/* GALLERY */}
       <section id="gallery" className="py-24 border-b border-neutral-800/60">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
@@ -142,7 +142,6 @@ export default function HomePage() {
               <p className="text-3xl font-bold text-white tracking-tight">Interior Gallery & Highlights</p>
             </div>
 
-            {/* Filter Tabs */}
             <div className="flex flex-wrap items-center gap-2 p-1.5 bg-neutral-900 border border-neutral-800 rounded-xl">
               <button
                 onClick={() => setActiveTab('all')}
@@ -171,7 +170,6 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {filteredGallery.map((item, index) => (
               <div 
@@ -207,7 +205,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- LIGHTBOX MODAL --- */}
+      {/* LIGHTBOX */}
       {selectedImage && (
         <div 
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"
@@ -230,8 +228,8 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* --- AMENITIES --- */}
-      <section id="amenities"lassName="py-24 bg-neutral-900/40 border-b border-neutral-800/60">
+      {/* AMENITIES */}
+      <section id="amenities" className="py-24 bg-neutral-900/40 border-b border-neutral-800/60">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Designed For Living</h2>
@@ -241,7 +239,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-8 rounded-2xl bg-neutral-900/60 border border-neutral-800/80">
               <div className="text-3xl mb-4">💳</div>
-              <h3 className="text-lg font-bold text-white mb-2">Digital Resident Portal</h3>
+              <h3 className="text-lg font-bold text-whib-2">Digital Resident Portal</h3>
               <p className="text-neutral-400 text-sm leading-relaxed">
                 Pay rent with one click via Debit, Credit, or ACH. View your payment ledger, charges, and real-time receipts.
               </p>
@@ -266,7 +264,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- CONTACT & PORTAL ACCESS --- */}
+      {/* CONTACT & PORTAL ACCESS */}
       <section id="contact" className="py-24 bg-neutral-900/20">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div>
@@ -320,7 +318,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* --- FOOTER --- */}
+      {/* FOOTER */}
       <footer className="py-12 border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs">
         <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
