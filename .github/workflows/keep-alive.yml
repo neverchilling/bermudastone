@@ -1,0 +1,14 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    - cron: '0 0 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase API Route
+        run: |
+          curl -s -X GET "https://bermudastone.com/api/cron/late-fees" > /dev/null || curl -s -X GET "https://bermudastone.com" > /dev/null
