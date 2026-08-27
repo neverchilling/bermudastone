@@ -1,445 +1,344 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
-import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
 
-interface Charge {
-  id: string;
-  description: string;
-  amount: number;
-  due_date: string;
-  status: string;
-}
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState<'all' | 'units' | 'neighborhood'>('all');
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-interface Lease {
-  id: string;
-  tenant_name: string;
-  tenant_email: string;
-  monthly_rent: number;
-  property_name: string;
-  unit_number: string;
-  charges: Charge[];
-}
-
-interface Ticket {
-  id: string;
-  category: string;
-  priority: string;
-  description: string;
-  status: string;
-  created_at: string;
-}
-
-export default function TenantPortal() {
-  const [showAllTransactions, setShowAllTransactions] = useState(false);
-  const [lease, setLease] = useState<Lease | null>(null);
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [paying, setPaying] = useState(false);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
-  const router = useRouter();
-
-  // Maintenance Request Modal State
-  const [showTicketModal, setShowTicketModal] = useState(false);
-  const [ticketCategory, setTicketCategory] = useState('Plumbing');
-  const [ticketPriority, setTicketPriority] = useState('medium');
-  const [ticketDescription, setTicketDescription] = useState('');
-  const [submittingTicket, setSubmittingTicket] = useState(false);
-  const [ticketMessage, setTicketMessage] = useState('');
-
-  const fetchTenantData = async (email: string) => {
-    const { data: leaseData } = await supabase
-      .from('leases')
-      .select('id, tenant_name, tenant_email, monthly_rent, property_name, unit_number, charges ( id, description, amount, due_date, status )')
-      .eq('tenant_email', email)
-      .maybeSingle();
-
-    if (leaseData) {
-      setLease(leaseData as any);
-
-      // Fetch active tickets for this lease
-      const { data: ticketData } = await supabase
-        .from('tickets')
-        .select('*')
-        .eq('lease_id', leaseData.id)
-        .order('created_at', { ascending: false });
-
-      if (ticketData) {
-        setTickets(ticketData);
-      }
+  const galleryItems = [
+    {
+      title: 'Duplex on Thompson - Unit A',
+      category: 'units',
+      subtitle: 'Modern Open-Concept Living & Stainless Finishes',
+      src: '/bermuda-bg.png',
+      badge: 'Available Now'
+    },
+    {
+      title: 'Thompson Ave Residential Suite',
+      category: 'units',
+      subtitle: 'Premium Flooring & Recessed Architectural Lighting',
+      src: '/bermudabackground.jpg',
+      badge: 'Recently Renovated'
+    },
+    {
+      title: 'Historic Neighborhood & Prime Access',
+      category: 'neighborhood',
+      subtitle: 'Steps from Public Transit, Dining & Key Corridors',
+      src: '/philly-skyline.jpg',
+      badge: 'Location'
+    },
+    {
+      title: 'Executive Style Living',
+      category: 'units',
+      subtitle: 'Keyless Electronic Entry & High-Speed Connectivity',
+      src: '/bermudacity.png',
+      badge: 'Amenities'
     }
-  };
+  ];
 
-  useEffect(() => {
-    async function checkUser() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-
-      setUserEmail(session.user.email || null);
-      if (session.user.email) {
-        await fetchTenantData(session.user.email);
-      }
-      setLoading(false);
-    }
-
-    checkUser();
-  }, [router]);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
-  };
-
-  const handlePayBalance = async (chargeId: string, amount: number) => {
-    setPaying(true);
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          chargeId,
-          tenantEmail: lease?.tenant_email,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        alert('Payment initialization failed: ' + (data.error || 'Unknown error'));
-        setPaying(false);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error initiating checkout.');
-      setPaying(false);
-    }
-  };
-
-  const handleSubmitTicket = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!lease) return;
-    setSubmittingTicket(true);
-    setTicketMessage('');
-
-    try {
-      const res = await fetch('/api/tickets', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          leaseId: lease.id,
-          tenantName: lease.tenant_name,
-          tenantEmail: lease.tenant_email,
-          propertyName: lease.property_name,
-          unitNumber: lease.unit_number,
-          category: ticketCategory,
-          priority: ticketPriority,
-          description: ticketDescription,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setTicketMessage('Ticket submitted successfully.');
-        setTicketDescription('');
-        setShowTicketModal(false);
-        if (userEmail) fetchTenantData(userEmail);
-      } else {
-        setTicketMessage('Error: ' + data.error);
-      }
-    } catch (err: any) {
-      console.error(err);
-      setTicketMessage('Failed to submit maintenance ticket.');
-    } finally {
-      setSubmittingTicket(false);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <div className="text-center">
-          <div className="mx-auto h-9 w-9 animate-spin rounded-full border-2 border-neutral-800 border-t-emerald-500"></div>
-          <p className="mt-4 text-xs font-medium text-neutral-400">Loading resident portal...</p>
-        </div>
-      </div>
-    );
-  }
-
-  const unpaidCharges = lease?.charges?.filter((c) => c.status === 'unpaid') || [];
-  const totalBalance = unpaidCharges.reduce((acc, curr) => acc + Number(curr.amount), 0);
-  const primaryUnpaidCharge = unpaidCharges[0];
+  const filteredGallery = activeTab === 'all' 
+    ? galleryItems 
+    : galleryItems.filter(item => item.category === activeTab);
 
   return (
-    <main className="min-h-screen bg-black text-white p-6 md:p-12 selection:bg-emerald-500 selection:text-black">
-
-      {/* Bermuda Stone Properties Brand Header */}
-      <div className="max-w-4xl mx-auto mb-8 flex items-center gap-4 border-b border-neutral-800/80 pb-6">
-        <img
-            src="/logo.png"
-            alt="Bermuda Stone Properties"
-            className="h-14 w-14 object-contain"
-          />
-        <div>
-          <h1 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">
-            Bermuda Stone Properties
-          </h1>
-          <p className="text-xs text-neutral-400 font-medium tracking-wide">
-            Resident Portal • Account Management
-          </p>
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-4xl">
-        {/* Top Header */}
-        <header className="mb-8 flex items-center justify-between border-b border-neutral-800 pb-5">
-          <div>
-            <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400">Resident Portal</span>
-            <h1 className="text-2xl md:text-3xl font-extrabold text-white">Welcome back, {lease?.tenant_name || 'Resident'}</h1>
-          </div>
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 font-sans selection:bg-emerald-500 selection:text-black">
+      
+      {/* --- STICKY NAVIGATION BAR --- */}
+      <header className="sticky top-0 z-40 w-full border-b border-neutral-800/80 bg-neutral-950/80 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => setShowTicketModal(true)}
-              className="rounded-xl bg-neutral-900 border border-neutral-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition"
-            >
-              🛠️ Request Repair
-            </button>
-            <button
-              onClick={handleSignOut}
-              className="rounded-xl border border-neutral-800 bg-neutral-900 px-3.5 py-2 text-xs font-semibold text-neutral-400 hover:border-neutral-700 hover:text-white transition"
-            >
-          Sign Out
-            </button>
-          </div>
-        </header>
-
-        {ticketMessage && (
-          <div className="mb-6 rounded-xl border border-emerald-500/30 bg-emerald-950/40 p-3.5 text-xs text-emerald-300">
-            {ticketMessage}
-          </div>
-        )}
-
-        {/* Property Info Card */}
-        <div className="mb-6 rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8 shadow-2xl">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Lease Details</span>
-              <h2 className="text-xl font-bold text-white mt-1">
-                {(lease?.property_name || 'Property') + ' • ' + (lease?.unit_number || 'Unit')}
-              </h2>
-              <p className="text-xs text-neutral-400 mt-1">Base Monthly Rent: <strong className="text-white">${Number(lease?.monthly_rent || 0).toFixed(2)}/mo</strong></p>
+            <div className="relative w-10 h-10 rounded-lg overflow-hidden border border-neutral-800 bg-neutral-900 p-1 flex items-center justify-center">
+              <Image 
+                src="/logo.png" 
+                alt="Bermuda Stone Properties Logo" 
+                width={36} 
+                height={36} 
+                className="object-contain"
+              />
             </div>
-            <div className="rounded-2xl bg-neutral-900/60 border border-neutral-800 p-4 text-left md:text-right">
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 block">Total Balance Due</span>
-              <p className={`text-3xl font-extrabold mt-1 ${totalBalance > 0 ? 'text-white' : 'text-emerald-400'}`}>
-                ${totalBalance.toFixed(2)}
+            <div>
+              <span className="font-bold text-lg tracking-wider block text-white">BERMUDA STONE</span>
+              <span className="text-[10px] tracking-widest uppercase text-emerald-400 font-semibold block -mt-1">Properties LLC</span>
+            </div>
+          </div>
+
+          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-neutral-400">
+            <a href="#about" className="hover:text-white transition-colors">About Us</a>
+            <a href="#amenities" className="hover:text-white transition-colors">Amenities</a>
+            <a href="#gallery" className="hover:text-white transition-colors">Gallery</a>
+            <a href="#contact" className="hover:text-white transition-colors">Contact</a>
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <Link 
+              href="/login" 
+              className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all"
+            >
+              Resident Portal
+            </Link>
+            <Link 
+              href="/admin/login" 
+              className="hidden sm:inline-flex px-4 py-2 text-sm font-semibold text-neutral-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg shadow-sm transition-all"
+            >
+              Owner Portal
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* --- HERO SECTION --- */}
+      <section className="relative pt-24 pb-20 md:pt-32 md:pb-28 overflow-hidden border-b border-neutral-800/60">
+        <div className="absolute inset-0 z-0 opacity-20">
+          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/70 to-transparent z-10" />
+          <Image 
+            src="/philly-skyline.jpg" 
+            alt="City Background" 
+            fill 
+            className="object-cover object-center"
+            priority
+          />
+        </div>
+
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-950/50 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-6">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Elevated Urban Living in Philadelphia
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+            Quality Residences Managed With <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Precision & Care</span>
+          </h1>
+
+          <p className="text-lg sm:text-xl text-neutral-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
+            Welcome to Bermuda Stone Properties. We provide thoughtfully maintained, modern apartment units with seamless digital rent payment, 24/7 maintenance tracking, and responsive local management.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a 
+              href="#gallery" 
+              className="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold rounded-xl shadow-lg shadow-emerald-500/10 transition-all text-center"
+            >
+              Explore Available Units
+            </a>
+            <Link 
+              href="/login" 
+              className="w-full sm:w-auto px-8 py-3.5 bg-neutral-900 hover:bg-neutral-800 text-white font-medium border border-neutral-700 rounded-xl transition-all text-center"
+            >
+              Sign In to Pay Rent
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* --- AMENITIES & FEATURES --- */}
+      <section id="amenities" className="py-24 bg-neutral-900/40 border-b border-neutral-800/60">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Resident Experience</h2>
+            <p className="text-3xl font-bold text-white tracking-tight">Built for Comfort & Convenience</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="p-8 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 hover:border-neutral-700 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold mb-6">
+                💳
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">1-Click Online Payments</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed">
+                Pay rent securely via debit card, credit card, or direct ACH transfer through Stripe. Real-time balance tracking and instant digital receipts.
+              </p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 hover:border-neutral-700 transition-all">
+              <div classme="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold mb-6">
+                ⚡
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Direct Maintenance Portal</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed">
+                Submit service and maintenance tickets straight from your phone with priority emergency dispatch and status tracking from start to finish.
+              </p>
+            </div>
+
+            <div className="p-8 rounded-2xl bg-neutral-900/60 border border-neutral-800/80 hover:border-neutral-700 transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-xl font-bold mb-6">
+                🔒
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">Keyless & Secure</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed">
+                Individual keyless entry codes, well-lit exteriors, and professionally updated properties designed for peace of mind and effortless move-in.
               </p>
             </div>
           </div>
+        </div>
+      </section>
 
-          {totalBalance > 0 && primaryUnpaidCharge && (
-            <div className="mt-6 border-t border-neutral-800 pt-6">
+      {/* --- GALLERY & PROPERTIES --- */}
+      <section id="gallery" className="py-24 border-b border-neutral-800/60">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+            <div>
+              <h2 className="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Our Portfolio</h2>
+              <p className="text-3xl font-bold text-white tracking-tight">Spaces Designed for Living</p>
+            </div>
+
+            {/* Filter buttons */}
+            <div className="flex items-center gap-2 p-1.5 bg-neutral-900 border border-neutral-800 rounded-xl">
               <button
-                onClick={() => handlePayBalance(primaryUnpaidCharge.id, totalBalance)}
-                disabled={paying}
-                className="w-full rounded-2xl bg-emerald-500 py-3.5 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition disabled:opacity-50"
+                onClick={() => setActiveTab('all')}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'all' ? 'bg-neutral-800 text-white shadow' : 'text-neutral-400 hover:text-white'}`}
               >
-                {paying ? 'Connecting to Secure Checkout...' : `Pay Balance ($${totalBalance.toFixed(2)}) with Card`}
+                All Views
+              </button>
+              <button
+                onClick={() => setActiveTab('units')}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'units' ? 'bg-neutral-800 text-white shadow' : 'text-neutral-400 hover:text-white'}`}
+              >
+                Units & Interiors
+              </button>
+              <button
+                onClick={() => setActiveTab('neighborhood')}
+                className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab === 'neighborhood' ? 'bg-neutral-800 text-white shadow' : 'text-neutral-400 hover:text-white'}`}
+              >
+                Neighborhood
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Ledger Breakdown */}
-          <div className="mb-8 rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-white">Account Ledger</h3>
-              {lease?.charges && lease.charges.length > 6 && (
-                <span className="text-[11px] font-medium text-neutral-400">
-                  Showing {showAllTransactions ? lease.charges.length : 6} of {lease.charges.length} items
-                </span>
-              )}
-            </div>
-
-            {(!lease?.charges || lease.charges.length === 0) ? (
-              <p className="text-xs text-neutral-500">No charges posted to ledger.</p>
-            ) : (
-              <div className="space-y-2">
-                {(showAllTransactions ? lease.charges : lease.charges.slice(0, 6)).map((charge: any) => (
-                  <div key={charge.id} className="flex items-center justify-between bg-neutral-900/50 p-3 rounded-xl border border-neutral-800/80 text-xs">
-                    <div>
-                      <span className="font-medium text-neutral-200">{charge.description}</span>
-                      <span className="text-neutral-500 ml-2">({charge.due_date})</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-white">${Number(charge.amount).toFixed(2)}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px] ${
-                        charge.status === 'paid'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40'
-                          : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
-                      }`}>
-                        {charge.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {lease.charges && lease.charges.length > 6 && (
-                  <div className="pt-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllTransactions(!showAllTransactions)}
-                      className="w-full py-2.5 px-4 rounded-xl border border-neutral-800 bg-neutral-900/90 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                    >
-                      <span>
-                        {showAllTransactions
-                          ? "Show Less ↑"
-                          : `Show All Transactions (${lease.charges.length} total) ↓`}
-                      </span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
-          {/* Maintenance Requests Section */}
-        <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base font-bold text-white">Maintenance & Repair Requests</h3>
-            <button
-              onClick={() => setShowTicketModal(true)}
-              className="text-xs font-bold text-emerald-400 hover:text-emerald-300"
-            >
-              + New Request
-            </button>
-          </div>
-
-          {tickets.length === 0 ? (
-            <p className="text-xs text-neutral-500">No open repair requests.</p>
-          ) : (
-            <div className="space-y-3">
-              {tickets.map((t) => (
-                <div key={t.id} className="bg-neutral-900/40 border border-neutral-800 p-4 rounded-2xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-md bg-neutral-800 px-2 py-0.5 text-[10px] font-bold text-white border border-neutral-700">
-                        {t.category}
-                      </span>
-                      <span className={`text-[10px] font-bold uppercase ${
-                        t.priority === 'urgent' ? 'text-red-400' : t.priority === 'high' ? 'text-amber-400' : 'text-neutral-400'
-                      }`}>
-                        {t.priority} Priority
-                      </span>
-                    </div>
-                    <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px] ${
-                      t.status === 'resolved'
-                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40'
-                        : t.status === 'in_progress'
-                        ? 'bg-blue-950 text-blue-400 border border-blue-800/40'
-                        : 'bg-neutral-800 text-neutral-300 border border-neutral-700'
-                    }`}>
-                      {t.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-neutral-300 mt-1">{t.description}</p>
-                  <span className="text-[10px] text-neutral-500 mt-2 block">
-                    Submitted on {new Date(t.created_at).toLocaleDateString()}
+          {/* Image Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-8">
+            {filteredGallery.map((item, index) => (
+              <div 
+                key={index}
+                onClick={() => setSelectedImage(item.src)}
+                className="group relative h-80 sm:h-96 rounded-2xl overflow-hidden bg-neutral-900 border border-neutral-800/80 cursor-pointer shadow-md"
+              >
+                <Image 
+                  src={item.src} 
+                  alt={item.title} 
+                  fill 
+                  className="object-cover group-hover:scale-105 transition-transform duration-500 brightness-90 group-hover:brightness-100"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/20 to-transparent" />
+                
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 text-xs font-bold uppercase tracking-wider bg-neutral-900/90 text-emerald-400 border border-neutral-700/80 rounded-full backdrop-blur-sm">
+                    {item.badge}
                   </span>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
 
-        {/* Maintenance Request Modal */}
-        {showTicketModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80  p-4">
-            <div className="w-full max-w-lg rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8 shadow-2xl">
-              <div className="flex items-center justify-between mb-4 border-b border-neutral-800 pb-3">
-                <h3 className="text-base font-bold text-white">Submit Maintenance Request</h3>
-                <button
-                  onClick={() => setShowTicketModal(false)}
-                  className="text-neutral-500 hover:text-white text-sm"
-                >
-                  ✕
-                </button>
+                <div className="absolute bottom-6 left-6 right-6">
+                  <h3 className="text-xl font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
+                    {item.title}
+                  </h3>
+                  <p className="text-neutral-300 text-sm font-light">
+                    {item.subtitle}
+                  </p>
+                </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-              <form onSubmit={handleSubmitTicket} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-neutral-400 mb-1">Issue Category</label>
-                    <select
-                      value={ticketCategory}
-                      onChange={(e) => setTicketCategory(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      <option value="Plumbing">Plumbing / Leak</option>
-                      <option value="HVAC / Heating">HVAC / Heating / AC</option>
-                      <option value="Electrical">Electrical / Lighting</option>
-                      <option value="Appliance">Appliance</option>
-                      <option value="Structural / Door">Door / Lock / Structural</option>
-                      <option value="Other">Other</option>
-                    </select>
-                  </div>
+      {/* --- LIGHTBOX MODAL --- */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-5xl w-full h-[75vh] rounded-2xl overflow-hidden border border-neutral-800">
+            <Image 
+              src={selectedImage} 
+              alt="Enlarged View" 
+              fill 
+              className="object-contain"
+            />
+            <button 
+              onClick={() => setSelectedImage(null)}
+              className="absolute top-4 right-4 bg-neutral-900/80 text-white rounded-full p-3 hover:bg-neutral-800 border border-neutral-700 text-sm font-bold"
+            >
+              ✕ Close
+            </button>
+          </div>
+        </div>
+      )}
 
-                  <div>
-                    <label className="block text-[11px] font-semibold text-neutral-400 mb-1">Urgency</label>
-                    <select
-                      value={ticketPriority}
-                      onChange={(e) => setTicketPriority(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
-                    >
-                      <option value="low">Low (Routine maintenance)</option>
-                      <option value="medium">Medium (Needs attention)</option>
-                      <option value="high">High (Urgent repair)</option>
-                      <option value="urgent">Critical / Emergency</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] font-semibold text-neutral-400 mb-1">Description of the Issue</label>
-                  <textarea
-                    rows={4}
-                    value={ticketDescription}
-                    onChange={(e) => setTicketDescription(e.target.value)}
-                    placeholder="Describe what is occurring, room location, and any relevant details..."
-                    required
-                    className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-3 text-xs text-white placeholder-neutral-500 focus:border-emerald-500 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex items-center gap-3 pt-2">
-                  <button
-                    type="submit"
-                    disabled={submittingTicket}
-                    className="flex-1 rounded-xl bg-emerald-500 py-3 text-xs font-bold text-black uppercase tracking-wider hover:bg-emerald-400 transition disabled:opacity-50"
-                  >
-                    {submittingTicket ? 'Submitting...' : 'Submit Request'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowTicketModal(false)}
-                    className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-3 text-xs font-semibold text-neutral-400 hover:text-white"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+      {/* --- ABOUT & CONTACT SECTION --- */}
+      <section id="contact" className="py-24 bg-neutral-900/20">
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <h2 className="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Inquire & Connect</h2>
+            <p className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-6">
+              Interested in Leasing a Bermuda Stone Residence?
+            </p>
+            <p className="text-neutral-400 leading-relaxed mb-8">
+              We look for quality, long-term tenants who appreciate well-kept homes and seamless communication. Contact our leasing office for upcoming vacancies, application requirements, and scheduled showings.
+            </p>
+            <div className="space-y-4 text-sm text-neutral-300">
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-400 font-bold">📍</span>
+                <span>Philadelphia, Pennsylvania</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-400 font-bold">✉️</span>
+                <span>management@bermudastone.com</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-400 font-bold">⚡</span>
+                <span>Direct portal support active 7 days a week</span>
+              </div>
             </div>
           </div>
-        )}
-      </div>
-    </main>
+
+          <div className="p-8 rounded-3xl bg-neutral-900 border border-neutral-800 shadow-xl">
+            <h3 className="text-xl font-bold text-white mb-2">Resident Quick Access</h3>
+            <p className="text-neutral-400 text-sm mb-6">Already lease with us? Jump directly to your account services below.</p>
+            
+            <div className="space-y-3">
+              <Link 
+                href="/login" 
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-neutral-800 hover:bg-neutral-750 border border-neutral-700 transition-all font-medium text-white group"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-emerald-400 text-lg">🔑</span>
+                  <span>Resident Portal Login</span>
+                </div>
+                <span className="text-neutral-400 group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+
+              <Link 
+                href="/admin/login" 
+                className="w-full flex items-center justify-between p-4 rounded-xl bg-neutral-800/60 hover:bg-neutral-750 border border-neutral-700/60 transition-all font-medium text-neutral-300 group"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-neutral-400 text-lg">⚙️</span>
+                  <span>Landlord & Admin Console</span>
+                </div>
+                <span className="text-neutral-400 group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- FOOTER --- */}
+      <footer className="py-12 border-t border-neutral-800/80 bg-neutral-950 text-neutral-500 text-xs">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <Image src="/logo.png" alt="Logo" width={24} height={24} className="opacity-80" />
+            <span>© {new Date().getFullYear()} Bermuda Stone Properties LLC. All rights reserved.</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <Link href="/login" className="hover:text-neutral-300">Tenant Portal</Link>
+            <Link href="/admin/login" className="hover:text-neutral-300">Admin Console</Link>
+            <a href="mailto:management@bermudastone.com" className="hover:text-neutral-300">Support</a>
+          </div>
+        </div>
+      </footer>
+
+    </div>
   );
 }
