@@ -41,16 +41,29 @@ export default function HomePage() {
       badge: '2-Bedroom Suite'
     },
     {
+      title: '2-Bed Primary Bedroom',
+      category: '2bed',
+      subtitle: 'King-Sized Residence featuring Recessed Lighting & Modern Ceiling Fan',
+      src: '/2bed-bedroom-primary.jpg',
+      badge: 'Primary Bedroom'
+    },
+    {
+      title: '2-Bed Second Bedroom & Workstation',
+      category: '2bed',
+      subtitle: 'Spacious Layout with Built-In Home Office Desk & Closet Storage',
+      src: '/2bed-bedroom-second.jpg',
+      badge: '2-Aed Bedroom'
+    },
+    {
       title: 'Exposed Brick Hallway Gallery',
       category: '2bed',
       subtitle: 'Dramatic Brick Architectural Corridor with Recessed Ceiling Lighting',
       src: '/2bed-brickhall.jpg',
-      badge: 'Character Finishes'
-    },
+      badge: 'Character Finishes' },
     {
       title: 'In-Unit Smart Washer & Dryer',
       category: '2bed',
-      subtitle: 'Integrated LG ThinQ High-Efficiency Front-Load Smart Laundry Setup',
+      subtitle: 'Integrated LG ThinQ Combo High-Efficiency Front-Load Smart Laundry',
       src: '/2bed-laundry.jpg',
       badge: 'In-Unit Laundry'
     },
@@ -62,7 +75,7 @@ export default function HomePage() {
       badge: 'Living Space'
     },
 
-    // BATHROOMS
+    // BATLROOMS
     {
       title: 'Master Bath LED Smart Vanity',
       category: 'bath',
@@ -85,13 +98,20 @@ export default function HomePage() {
       badge: '1-Bed Bath'
     },
 
-    // DECKS  & AMENITIES
+    // DECKS & AMENITIES
     {
       title: 'Private Cedar Rooftop / Rear Deck',
       category: 'outdoor',
       subtitle: 'Dedicated Outdoor Living and Dining Deck with Open Skyline Views',
       src: '/2bed-deck.jpg',
       badge: 'Outdoor Space'
+    },
+    {
+      title: 'Covered Carport & Outdoor Space',
+      category: 'outdoor',
+      subtitle: 'Protected under-deck parking port and outdoor utility area',
+      src: '/2bed-underdeck-parking.jpg',
+      badge: 'Parking & Outdoor'
     }
   ];
 
@@ -161,14 +181,15 @@ export default function HomePage() {
             1-Bedroom & 2-Bedroom Designer Residences
           </div>
 
-
           <h1 className="text-4l sm:text-6l font-extrabold tracking-tight text-white mb-6 leading-tight">
             Elevated Living With <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Historic Character & Modern Luxury</span>
           </h1>
 
+
           <p className="text-lg sm:text-xl text-neutral-400 max-w-2xl mx-auto mb-10 leading-relaxed font-light">
             Thoughtfully upgraded apartments featuring private cedar decks, in-unit smart laundry, backlit LED spa baths, keyless security, and seamless online tenant portals.
           </p>
+
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a 
@@ -219,7 +240,7 @@ export default function HomePage() {
                 onClick={() => setActiveTab('outdoor')}
                 className={activeTab === 'outdoor' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
               >
-                Decks & Amenities
+                Decks, Parking & Amenities
               </button>
               <button
                 onClick={() => setActiveTab('all')}
@@ -310,14 +331,14 @@ export default function HomePage() {
 
             <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800/80">
               <div className="text-3l mb-4">☀️</div>
-              <h3 className="text-base font-bold text-white mb-2">Private Cedar Deck</h3>
+              <h3 className="text-base font-bold text-white mb-2">Deck & Carport</h3>
               <p className="text-neutral-400 text-xs leading-relaxed">
-                Dedicated outdoor living and dining deck with open skyline views.
+                Private cedar rear luxury deck plus protected under-deck carport space.
               </p>
             </div>
 
 
-            <div className="p-6 rounded-2xl bg-neutral-900/60 border-neutral-800/80">
+            <div className="p-6 rounded-2xl bg-neutral-900/60 border border-neutral-800/80">
               <div className="text-3l mb-4">⒅</div>
               <h3 className="text-base font-bold text-white mb-2">LED Spa Bathrooms</h3>
               <p className="text-neutral-400 text-xs leading-relaxed">
