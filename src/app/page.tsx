@@ -4,63 +4,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState<'all' | '2bed' | '1bed' | 'bath' | 'outdoor'>('all');
+  const [activeTab, setActiveTab] = useState<'1bed' | '2bed' | 'bath' | 'outdoor' | 'all'>('1bed');
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+
   const galleryItems = [
-    {
-      title: '2-Bed Kitchen & Stainless Suite',
-      category: '2bed',
-      subtitle: 'Whirlpool Stainless Appliance Suite, Modern Cabinetry & Full Exposed Brick Accent Wall',
-      src: '/2bed-kitchen.jpg',
-      badge: '2-Bedroom Suite'
-    },
-    {
-      title: 'Private Cedar Rooftop / Rear Deck',
-      category: 'outdoor',
-      subtitle: 'Dedicated Outdoor Living and Dining Deck with Open Skyline Views',
-      src: '/2bed-deck.jpg',
-      badge: 'Outdoor Space'
-    },
-    {
-      title: 'Exposed Brick Hallway Gallery',
-      category: '2bed',
-      subtitle: 'Dramatic Brick Architectural Corridor with Recessed Ceiling Lighting',
-      src: '/2bed-brickhall.jpg',
-      badge: 'Character Finishes'
-    },
-    {
-      title: 'Master Bath LED Smart Vanity',
-      category: 'bath',
-      subtitle: 'Backlit Touch LED Anti-Fog Mirror, Quartz Top & Slate Grey Shaker Vanity',
-      src: '/2bed-bath-vanity.jpg',
-      badge: 'Luxury Bath'
-    },
-    {
-      title: 'Deep Soaking Tub & Rainfall Shower',
-      category: 'bath',
-      subtitle: 'Porcelain Marble Surround, Brushed Nickel Fixtures & Rainfall Showerhead',
-      src: '/2bed-tub.jpg',
-      badge: 'Spa Bath'
-    },
-    {
-      title: 'In-Unit Smart Washer & Dryer',
-      category: '2bed',
-      subtitle: 'Integrated LG ThinQ High-Efficiency Front-Load Smart Laundry Setup',
-      src: '/2bed-laundry.jpg',
-      badge: 'In-Unit Laundry'
-    },
-    {
-      title: '2-Bed Living & Lounge Suite',
-      category: '2bed',
-      subtitle: 'Wide Plank Flooring, Modern Ceiling Fan & Wall-Mounted Entertainment Display',
-      src: '/2bed-living-angle.jpg',
-      badge: 'Living Space'
-    },
+    // 1 BEDROOM UNIT
     {
       title: '1-Bed Open Living & Kitchen Island',
       category: '1bed',
-      subtitle: 'Historic Exposed Brick Chimney, Sleek Dark Island & Open-Concept Layout',
+      subtitle: 'Historic E|posed Brick Chimney, Sleek Dark Island & Open-Concept Layout',
       src: '/apt-main.jpg',
       badge: '1-Bedroom Suite'
     },
@@ -78,12 +31,67 @@ export default function HomePage() {
       src: '/sliding-door.jpg',
       badge: 'Designer Interior'
     },
+
+    // 2 BEDROOM UNIT
+    {
+      title: '2-Bed Kitchen & Stainless Suite',
+      category: '2bed',
+      subtitle: 'Whiclpool Stainless Appliance Suite, Modern Cabinetry & Full Exposed Brick Accent Wall',
+      src: '/2bed-kitchen.jpg',
+      badge: '2-Bedroom Suite'
+    },
+    {
+      title: 'Exposed Brick Hallway Gallery',
+      category: '2bed',
+      subtitle: 'Dramatic Brick Architectural Corridor with Recessed Ceiling Lighting',
+      src: '/2bed-brickhall.jpg',
+      badge: 'Character Finishes'
+    },
+    {
+      title: 'In-Unit Smart Washer & Dryer',
+      category: '2bed',
+      subtitle: 'Integrated LG ThinQ High-Efficiency Front-Load Smart Laundry Setup',
+      src: '/2bed-laundry.jpg',
+      badge: 'In-Unit Laundry'
+    },
+    {
+      title: '2-Bed Living & Lounge Suite',
+      category: '2bed',
+      subtitle: 'Wide Plank Flooring, Modern Ceiling Fan & Wall-Mounted Entertainment Display',
+      src: '/2bed-living-angle.jpg',
+      badge: 'Living Space'
+    },
+
+    // BATHROOMS
+    {
+      title: 'Master Bath LED Smart Vanity',
+      category: 'bath',
+      subtitle: 'Backlit Touch LED Anti-Fog Mirror, Quartz Top & Slate Grey Shaker Vanity',
+      src: '/2bed-bath-vanity.jpg',
+      badge: 'Luxury Bath'
+    },
+    {
+      title: 'Deep Soaking Tub & Rainfall Shower',
+      category: 'bath',
+      subtitle: 'Porcelain Marble Surround, Brushed Nickel Fixtures & Rainfall Showerhead',
+      src: '/2bed-tub.jpg',
+      badge: 'Spa Bath'
+    },
     {
       title: '1-Bed Contemporary Bath',
       category: 'bath',
       subtitle: 'Carrara Marble Vanity, Mosaic Backsplash & Natural Light Accent Window',
       src: '/shower-apt.jpg',
       badge: '1-Bed Bath'
+    },
+
+    // DECKS  & AMENITIES
+    {
+      title: 'Private Cedar Rooftop / Rear Deck',
+      category: 'outdoor',
+      subtitle: 'Dedicated Outdoor Living and Dining Deck with Open Skyline Views',
+      src: '/2bed-deck.jpg',
+      badge: 'Outdoor Space'
     }
   ];
 
@@ -121,7 +129,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3">
             <Link 
               href="/login" 
-              className="px-4 py-2 text-sm font-medium text-neutral-300 hover:text-white bg-neutral-900 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all"
+              className="px-4 py-2 text-sm font-medium text-neutral-300 hover:bg-neutral-800 border border-neutral-800 rounded-lg transition-all"
             >
               Resident Login
             </Link>
@@ -153,6 +161,7 @@ export default function HomePage() {
             1-Bedroom & 2-Bedroom Designer Residences
           </div>
 
+
           <h1 className="text-4l sm:text-6l font-extrabold tracking-tight text-white mb-6 leading-tight">
             Elevated Living With <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-200">Historic Character & Modern Luxury</span>
           </h1>
@@ -181,7 +190,7 @@ export default function HomePage() {
 
       <section id="gallery" className="py-24 border-b border-neutral-800/60">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div className="flex flex-col full md:flex-row md:items-end justify-between mb-12 gap-6">
             <div>
               <h2 className="text-xs uppercase font-bold tracking-widest text-emerald-400 mb-2">Portfolio Showcase</h2>
               <p className="text-3l font-bold text-white tracking-tight">Apartment Tours & Finishes</p>
@@ -189,23 +198,16 @@ export default function HomePage() {
 
             <div className="flex flex-wrap items-center gap-2 p-1.5 bg-neutral-900 border border-neutral-800 rounded-xl">
               <button
-                onClick={() => setActiveTab('all')}
-                className={activeTab === 'all' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
-              >
-                All Views ({galleryItems.length})
-              </button>
-              <button
-                onClick=
-{() => setActiveTab('2bed')}
-                className={activeTab === '2bed' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
-              >
-                2-Bedroom Unit
-              </button>
-              <button
                 onClick={() => setActiveTab('1bed')}
                 className={activeTab === '1bed' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
               >
                 1-Bedroom Unit
+              </button>
+              <button
+                onClick={() => setActiveTab('2bed')}
+                className={activeTab === '2bed' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
+              >
+                2-Bedroom Unit
               </button>
               <button
                 onClick={() => setActiveTab('bath')}
@@ -219,11 +221,16 @@ export default function HomePage() {
               >
                 Decks & Amenities
               </button>
+              <button
+                onClick={() => setActiveTab('all')}
+                className={activeTab === 'all' ? 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all bg-neutral-800 text-white shadow' : 'px-4 py-1.5 text-xs font-semibold rounded-lg transition-all text-neutral-400 hover:text-white'}
+              >
+                All Views ({galleryItems.length})
+              </button>
             </div>
           </div>
 
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lgkgrid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredGallery.map((item, index) => (
               <div 
                 key={index}
@@ -246,7 +253,7 @@ export default function HomePage() {
 
 
                 <div className="absolute bottom-5 left-5 right-5">
-                  <h3 className="text-mg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
+                  <h3 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
                     {item.title}
                   </h3>
                   <p className="text-neutral-300 text-xs font-light leading-relaxed line-clamp-2">
@@ -268,7 +275,7 @@ export default function HomePage() {
           <div className="relative max-w-5xl w-full h-[85vh] rounded-2xl overflow-hidden border border-neutral-800">
             <Image 
               src={selectedImage} 
-              alt="Enlarged" 
+              alt="Enlarged View" 
               fill 
               className="object-contain"
             />
@@ -276,7 +283,7 @@ export default function HomePage() {
               onClick={() => setSelectedImage(null)}
               className="absolute top-4 right-4 bg-neutral-900/90 text-white rounded-full px-4 py-2 hover:bg-neutral-800 border border-neutral-700 text-xs font-bold uppercase tracking-wider shadow-lg"
             >
-              ✕ Close
+              &#x2705; Close
             </button>
           </div>
         </div>
