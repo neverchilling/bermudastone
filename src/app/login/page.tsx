@@ -80,7 +80,16 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          
+        <div className="mb-6 flex items-center justify-between">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-emerald-400 transition-colors"
+          >
+            ← Back to Homepage
+          </Link>
+        </div>
+        <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider text-neutral-300 mb-1.5">
                 Resident Email

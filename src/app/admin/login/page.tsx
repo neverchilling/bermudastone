@@ -73,6 +73,15 @@ export default function AdminLoginPage() {
           </div>
         )}
 
+        
+        <div className="mb-6 flex items-center justify-between">
+          <Link 
+            href="/" 
+            className="inline-flex items-center gap-2 text-xs font-semibold text-neutral-400 hover:text-emerald-400 transition-colors"
+          >
+            ← Back to Homepage
+          </Link>
+        </div>
         <form onSubmit={handleAdminLogin} className="space-y-4">
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-400 mb-1.5">
