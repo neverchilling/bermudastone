@@ -253,7 +253,7 @@ export default function HomePage() {
                 onClick={() => setActiveTab('outdoor')}
                 className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all ${activeTab === 'outdoor' ? 'bg-stone-900 text-white shadow-sm' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100'}`}
               >
-                Decks, Parking & Amenities
+                Decks & Amenities
               </button>
               <button
                 onClick={() => setActiveTab('all')}
