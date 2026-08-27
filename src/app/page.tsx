@@ -43,7 +43,7 @@ export default function HomePage() {
     {
       title: '2-Bed Primary Bedroom',
       category: '2bed',
-      subtitle: 'King-Sized Residence featuring Recessed Lighting & Modern Ceiling Fan',
+      subtitle: 'Queen-Sized Residence featuring Recessed Lighting & Modern Ceiling Fan',
       src: '/2bed-bedroom-primary.jpg',
       badge: 'Primary Bedroom'
     },
