@@ -185,10 +185,10 @@ export default function TenantPortal() {
       {/* Bermuda Stone Properties Brand Header */}
       <div className="max-w-4xl mx-auto mb-8 flex items-center gap-4 border-b border-neutral-800/80 pb-6">
         <img
-            src="/logo.png"
-            alt="Bermuda Stone Properties"
-            className="h-14 w-14 object-contain"
-          />
+          src="/logo.png"
+          alt="Bermuda Stone Properties"
+          className="h-14 w-14 object-contain"
+        />
         <div>
           <h1 className="text-xl md:text-2xl font-black uppercase tracking-wider text-white">
             Bermuda Stone Properties
@@ -209,7 +209,7 @@ export default function TenantPortal() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowTicketModal(true)}
-              className="rounded-xl bg-neutral-900 border border-neutral-700 px-3.5 py-2 text-xs font-bold text-white hover:bg-neutral-800 transition"
+              className="rounded-xl bg-neutral-900 border border-neutral-700 px-3.5 py-2 text-xs fonbold text-white hover:bg-neutral-800 transition"
             >
               🛠️ Request Repair
             </button>
@@ -232,7 +232,7 @@ export default function TenantPortal() {
         <div className="mb-6 rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8 shadow-2xl">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Lease Details</span>
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500">Lease ils</span>
               <h2 className="text-xl font-bold text-white mt-1">
                 {(lease?.property_name || 'Property') + ' • ' + (lease?.unit_number || 'Unit')}
               </h2>
@@ -351,7 +351,7 @@ export default function TenantPortal() {
                         {t.priority} Priority
                       </span>
                     </div>
-                    <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px] ${
+                    <span className={`px-2.5 py-0.5 red-full font-bold uppercase text-[9px] ${
                       t.status === 'resolved'
                         ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40'
                         : t.status === 'in_progress'
@@ -363,7 +363,7 @@ export default function TenantPortal() {
                   </div>
                   <p className="text-xs text-neutral-300 mt-1">{t.description}</p>
                   <span className="text-[10px] text-neutral-500 mt-2 block">
-                    Submittede(t.created_at).toLocaleDateString()}
+                    Submitted on {new Date(t.created_at).toLocaleDateString()}
                   </span>
                 </div>
               ))}
@@ -395,7 +395,7 @@ export default function TenantPortal() {
                       className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
                     >
                       <option value="Plumbing">Plumbing / Leak</option>
-                      <option value="HVAC / Heating">HVAC / Heating / A/option>
+                      <option value="HVAC / Heating">HVAC / Heating / AC</option>
                       <option value="Electrical">Electrical / Lighting</option>
                       <option value="Appliance">Appliance</option>
                       <option value="Structural / Door">Door / Lock / Structural</option>
@@ -408,7 +408,7 @@ export default function TenantPortal() {
                     <select
                       value={ticketPriority}
                       onChange={(e) => setTicketPriority(e.target.value)}
-                      className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
+                      className="w-full rounded-xl border border-neutral-800 bneutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
                     >
                       <option value="low">Low (Routine maintenance)</option>
                       <option value="medium">Medium (Needs attention)</option>
