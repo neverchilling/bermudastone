@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2023-10-16' as any,
@@ -16,7 +16,6 @@ export async function POST(request: Request) {
 
   try {
     if (!signature || !webhookSecret) {
-      // Fallback in dev if webhook secret is not yet set
       event = JSON.parse(payload);
     } else {
       event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
@@ -32,9 +31,9 @@ export async function POST(request: Request) {
     const chargeId = session.metadata?.chargeId;
 
     if (chargeId) {
-      console.log(`⚡ Stripe Webhook: Updating charge ${chargeId} to 'paid' in Supabase...`);
+      console.log(`⚡ Stripe Webhook: Updating charge ${chargeId} to 'paid' via admin client...`);
 
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('charges')
         .update({ status: 'paid' })
         .eq('id', chargeId);
