@@ -7,7 +7,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
 
 export async function POST(request: Request) {
   try {
-    const { amount, chargeId, tenantEmail } = await request.json();
+    const { amount, chargeId, description, tenantEmail } = await request.json();
 
     if (!amount || !chargeId) {
       return NextResponse.json({ error: 'Missing amount or chargeId' }, { status: 400 });
@@ -23,7 +23,7 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: 'Property Rent / Ledger Charge',
+              name: description || 'Property Rent / Ledger Charge',
             },
             unit_amount: Math.round(Number(amount) * 100), // convert dollars to cents
           },
@@ -34,9 +34,10 @@ export async function POST(request: Request) {
       metadata: {
         chargeId: String(chargeId),
         tenantEmail: String(tenantEmail || ''),
+        description: String(description || 'Balance Payment'),
       },
-      success_url: `${host}/?payment=success&chargeId=${chargeId}`,
-      cancel_url: `${host}/?payment=cancelled`,
+      success_url: `${host}/portal?payment=success&chargeId=${chargeId}`,
+      cancel_url: `${host}/portal?payment=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });

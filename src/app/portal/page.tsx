@@ -97,7 +97,7 @@ export default function TenantPortal() {
     router.push('/login');
   };
 
-  const handlePayBalance = async (chargeId: string, amount: number) => {
+  const handlePayBalance = async (chargeId: string, amount: number, description?: string) => {
     setPaying(true);
     try {
       const res = await fetch('/api/checkout', {
@@ -106,6 +106,7 @@ export default function TenantPortal() {
         body: JSON.stringify({
           amount,
           chargeId,
+          description: description || 'Balance Payment',
           tenantEmail: lease?.tenant_email,
         }),
       });
@@ -216,7 +217,7 @@ export default function TenantPortal() {
               onClick={handleSignOut}
               className="rounded-xl border border-neutral-800 bg-neutral-900 px-3.5 py-2 text-xs font-semibold text-neutral-400 hover:border-neutral-700 hover:text-white transition"
             >
-          Sign Out
+              Sign Out
             </button>
           </div>
         </header>
@@ -248,70 +249,80 @@ export default function TenantPortal() {
           {totalBalance > 0 && primaryUnpaidCharge && (
             <div className="mt-6 border-t border-neutral-800 pt-6">
               <button
-                onClick={() => handlePayBalance(primaryUnpaidCharge.id, totalBalance)}
+                onClick={() => handlePayBalance(primaryUnpaidCharge.id, totalBalance, 'Total Balance Payment')}
                 disabled={paying}
                 className="w-full rounded-2xl bg-emerald-500 py-3.5 text-sm font-bold uppercase tracking-wider text-black shadow-lg shadow-emerald-500/20 hover:bg-emerald-400 transition disabled:opacity-50"
               >
-                {paying ? 'Connecting to Secure Checkout...' : `Pay Balance ($${totalBalance.toFixed(2)}) with Card`}
+                {paying ? 'Connecting to Secure Checkout...' : `Pay Full Balance ($${totalBalance.toFixed(2)}) with Card`}
               </button>
             </div>
           )}
         </div>
 
         {/* Ledger Breakdown */}
-          <div className="mb-8 rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-base font-bold text-white">Account Ledger</h3>
-              {lease?.charges && lease.charges.length > 6 && (
-                <span className="text-[11px] font-medium text-neutral-400">
-                  Showing {showAllTransactions ? lease.charges.length : 6} of {lease.charges.length} items
-                </span>
-              )}
-            </div>
-
-            {(!lease?.charges || lease.charges.length === 0) ? (
-              <p className="text-xs text-neutral-500">No charges posted to ledger.</p>
-            ) : (
-              <div className="space-y-2">
-                {(showAllTransactions ? lease.charges : lease.charges.slice(0, 6)).map((charge: any) => (
-                  <div key={charge.id} className="flex items-center justify-between bg-neutral-900/50 p-3 rounded-xl border border-neutral-800/80 text-xs">
-                    <div>
-                      <span className="font-medium text-neutral-200">{charge.description}</span>
-                      <span className="text-neutral-500 ml-2">({charge.due_date})</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="font-bold text-white">${Number(charge.amount).toFixed(2)}</span>
-                      <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px] ${
-                        charge.status === 'paid'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40'
-                          : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
-                      }`}>
-                        {charge.status}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-
-                {lease.charges && lease.charges.length > 6 && (
-                  <div className="pt-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowAllTransactions(!showAllTransactions)}
-                      className="w-full py-2.5 px-4 rounded-xl border border-neutral-800 bg-neutral-900/90 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-                    >
-                      <span>
-                        {showAllTransactions
-                          ? "Show Less ↑"
-                          : `Show All Transactions (${lease.charges.length} total) ↓`}
-                      </span>
-                    </button>
-                  </div>
-                )}
-              </div>
+        <div className="mb-8 rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-base font-bold text-white">Account Ledger</h3>
+            {lease?.charges && lease.charges.length > 6 && (
+              <span className="text-[11px] font-medium text-neutral-400">
+                Showing {showAllTransactions ? lease.charges.length : 6} of {lease.charges.length} items
+              </span>
             )}
           </div>
 
-          {/* Maintenance Requests Section */}
+          {(!lease?.charges || lease.charges.length === 0) ? (
+            <p className="text-xs text-neutral-500">No charges posted to ledger.</p>
+          ) : (
+            <div className="space-y-2">
+              {(showAllTransactions ? lease.charges : lease.charges.slice(0, 6)).map((charge: any) => (
+                <div key={charge.id} className="flex flex-col sm:flex-row sm:items-center justify-between bg-neutral-900/50 p-3 rounded-xl border border-neutral-800/80 text-xs gap-3">
+                  <div>
+                    <span className="font-medium text-neutral-200">{charge.description}</span>
+                    <span className="text-neutral-500 ml-2">({charge.due_date})</span>
+                  </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-3">
+                    <span className="font-bold text-white">${Number(charge.amount).toFixed(2)}</span>
+                    <span className={`px-2.5 py-0.5 rounded-full font-bold uppercase text-[9px] ${
+                      charge.status === 'paid'
+                        ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/40'
+                        : 'bg-neutral-900 text-neutral-400 border border-neutral-800'
+                    }`}>
+                      {charge.status}
+                    </span>
+                    {charge.status !== 'paid' && (
+                      <button
+                        type="button"
+                        disabled={paying}
+                        onClick={() => handlePayBalance(charge.id, Number(charge.amount), charge.description)}
+                        className="rounded-lg bg-emerald-500 px-3 py-1 font-bold text-[11px] uppercase tracking-wider text-black transition hover:bg-emerald-400 disabled:opacity-50 cursor-pointer"
+                      >
+                        Pay
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {lease.charges && lease.charges.length > 6 && (
+                <div className="pt-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllTransactions(!showAllTransactions)}
+                    className="w-full py-2.5 px-4 rounded-xl border border-neutral-800 bg-neutral-900/90 hover:bg-neutral-800 text-xs font-semibold text-neutral-200 hover:text-white transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <span>
+                      {showAllTransactions
+                        ? "Show Less ↑"
+                        : `Show All Transactions (${lease.charges.length} total) ↓`}
+                    </span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Maintenance Requests Section */}
         <div className="rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-base font-bold text-white">Maintenance & Repair Requests</h3>
@@ -352,7 +363,7 @@ export default function TenantPortal() {
                   </div>
                   <p className="text-xs text-neutral-300 mt-1">{t.description}</p>
                   <span className="text-[10px] text-neutral-500 mt-2 block">
-                    Submitted on {new Date(t.created_at).toLocaleDateString()}
+                    Submittede(t.created_at).toLocaleDateString()}
                   </span>
                 </div>
               ))}
@@ -362,7 +373,7 @@ export default function TenantPortal() {
 
         {/* Maintenance Request Modal */}
         {showTicketModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80  p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
             <div className="w-full max-w-lg rounded-3xl border border-neutral-800 bg-neutral-950 p-6 md:p-8 shadow-2xl">
               <div className="flex items-center justify-between mb-4 border-b border-neutral-800 pb-3">
                 <h3 className="text-base font-bold text-white">Submit Maintenance Request</h3>
@@ -384,7 +395,7 @@ export default function TenantPortal() {
                       className="w-full rounded-xl border border-neutral-800 bg-neutral-900 p-2.5 text-xs text-white focus:border-emerald-500 focus:outline-none"
                     >
                       <option value="Plumbing">Plumbing / Leak</option>
-                      <option value="HVAC / Heating">HVAC / Heating / AC</option>
+                      <option value="HVAC / Heating">HVAC / Heating / A/option>
                       <option value="Electrical">Electrical / Lighting</option>
                       <option value="Appliance">Appliance</option>
                       <option value="Structural / Door">Door / Lock / Structural</option>
